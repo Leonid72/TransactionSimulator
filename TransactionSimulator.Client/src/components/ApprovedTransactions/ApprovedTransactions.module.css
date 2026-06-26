@@ -1,0 +1,99 @@
+.section {
+  padding: 48px 64px;
+  background: #fff;
+}
+
+.heading {
+  font-family: 'Inter', sans-serif;
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: #1e1e1e;
+  margin: 0 0 24px;
+}
+
+.carouselWrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.carousel {
+  display: flex;
+  gap: 24px;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  padding: 4px 0 8px;
+  flex: 1;
+  scrollbar-width: none;
+}
+
+.carousel::-webkit-scrollbar {
+  display: none;
+}
+
+.card {
+  flex: 0 0 240px;
+  min-width: 200px;
+  padding: 20px 24px;
+  background: #fff;
+  border: 1px solid #d9d9d9;
+  border-radius: 8px;
+  transition: box-shadow 0.2s;
+}
+
+.card:hover {
+  box-shadow: 0 2px 12px rgba(101, 85, 143, 0.12);
+}
+
+.cardTime {
+  font-family: 'Inter', sans-serif;
+  font-size: 18px;
+  font-weight: 600;
+  color: #1e1e1e;
+  margin: 0 0 6px;
+}
+
+.cardZone {
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  color: #555;
+  margin: 0;
+}
+
+.arrow {
+  flex: 0 0 32px;
+  width: 32px;
+  height: 32px;
+  background: #fff;
+  border: none;
+  border-radius: 50%;
+  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.08);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: box-shadow 0.2s;
+}
+
+.arrow:hover {
+  box-shadow: 0px 4px 16px rgba(0, 0, 0, 0.14);
+}
+
+.message {
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  color: #888;
+  padding: 16px 0;
+}
+
+@media (max-width: 768px) {
+  .section {
+    padding: 32px 16px;
+  }
+
+  .card {
+    flex: 0 0 180px;
+    min-width: 160px;
+  }
+}

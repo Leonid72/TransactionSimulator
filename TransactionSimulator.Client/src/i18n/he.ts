@@ -1,0 +1,35 @@
+import type { Translations } from './en';
+
+const he: Translations = {
+  transactionSimulator: 'סימולטור עסקאות',
+  question: 'האם העסקה תאושר?',
+  regionLabel: 'אזור',
+  searchPlaceholder: 'חפש מדינה...',
+  enterTime: 'הזן שעה',
+  hour: 'שעה',
+  minute: 'דקה',
+  cancel: 'ביטול',
+  ok: 'אישור',
+  approvedTransactions: 'עסקאות מאושרות',
+  time: 'שעה',
+  timeZone: 'אזור זמן',
+  login: 'התחברות',
+  register: 'הרשמה',
+  logout: 'התנתקות',
+  email: 'אימייל',
+  password: 'סיסמה',
+  fullName: 'שם מלא',
+  noAccount: 'אין לך חשבון?',
+  hasAccount: 'כבר יש לך חשבון?',
+  signUp: 'הירשם',
+  signIn: 'התחבר',
+  approved: 'אושר',
+  rejected: 'נדחה',
+  submitResult: 'תוצאת עסקה',
+  submitting: 'בודק...',
+  noTransactions: 'אין עדיין עסקאות מאושרות.',
+  eng: 'ENG',
+  hebrew: 'עברית',
+};
+
+export default he;

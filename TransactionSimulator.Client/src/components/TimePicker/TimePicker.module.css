@@ -1,0 +1,130 @@
+.picker {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  background: #d6cce7;
+  border-radius: 28px;
+  padding: 0;
+  width: 328px;
+  box-shadow: 0 4px 20px rgba(101, 85, 143, 0.2);
+}
+
+.pickerHeader {
+  padding: 24px 24px 0;
+}
+
+.title {
+  font-family: 'Roboto', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  letter-spacing: 0.5px;
+  color: #49454f;
+}
+
+.inputs {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 0 24px;
+  gap: 12px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  flex: 1;
+}
+
+.timeInput {
+  width: 100%;
+  height: 72px;
+  background: #e6e0e9;
+  border: 2px solid transparent;
+  border-radius: 8px;
+  font-family: 'Roboto', sans-serif;
+  font-size: 45px;
+  font-weight: 400;
+  line-height: 52px;
+  color: #1d1b20;
+  text-align: center;
+  outline: none;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+  box-sizing: border-box;
+}
+
+.timeInput.active {
+  background: #eaddff;
+  border-color: #65558f;
+  color: #21005d;
+}
+
+.fieldLabel {
+  font-family: 'Roboto', sans-serif;
+  font-size: 12px;
+  letter-spacing: 0.4px;
+  color: #49454f;
+  text-align: center;
+}
+
+.separator {
+  font-family: 'Roboto', sans-serif;
+  font-size: 57px;
+  line-height: 64px;
+  color: #1d1b20;
+  margin-top: 4px;
+  user-select: none;
+}
+
+.actions {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 24px 20px 12px;
+}
+
+.clockIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  cursor: default;
+}
+
+.buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.cancelBtn,
+.okBtn {
+  font-family: 'Roboto', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.1px;
+  color: #65558f;
+  background: none;
+  border: none;
+  border-radius: 100px;
+  padding: 10px 12px;
+  cursor: pointer;
+  transition: background 0.15s;
+  min-width: 40px;
+}
+
+.cancelBtn:hover,
+.okBtn:hover {
+  background: rgba(101, 85, 143, 0.1);
+}
+
+@media (max-width: 600px) {
+  .picker {
+    width: 100%;
+    max-width: 328px;
+  }
+}
