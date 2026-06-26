@@ -25,7 +25,6 @@ export interface AuthData {
 }
 
 export interface SubmitRequest {
-  amount: number;
   currency: string;
   region: string;
 }

@@ -1,17 +1,44 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import CountrySearch from '../CountrySearch/CountrySearch';
-import TimePicker from '../TimePicker/TimePicker';
 import { useLanguage } from '../../context/LanguageContext';
 import { submitTransaction } from '../../api/transactions';
 import type { Transaction } from '../../types';
 import styles from './SimulatorSection.module.css';
 
 const CURRENCIES: Record<string, string> = {
-  France: 'EUR',
   Israel: 'ILS',
-  Cyprus: 'EUR',
-  Italy: 'EUR',
+  France: 'EUR',
+  USA: 'USD',
+  Japan: 'JPY',
+  UK: 'GBP',
+  Germany: 'EUR',
+  India: 'INR',
 };
+
+const TIMEZONES: Record<string, string> = {
+  Israel: 'Asia/Jerusalem',
+  France: 'Europe/Paris',
+  USA: 'America/New_York',
+  Japan: 'Asia/Tokyo',
+  UK: 'Europe/London',
+  Germany: 'Europe/Berlin',
+  India: 'Asia/Kolkata',
+};
+
+function getLocalTime(region: string): { hour: number; minute: number } {
+  const tz = TIMEZONES[region];
+  if (!tz) return { hour: 0, minute: 0 };
+  const now = new Date();
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: tz,
+    hour: 'numeric',
+    minute: 'numeric',
+    hour12: false,
+  }).formatToParts(now);
+  const hour = parseInt(parts.find((p) => p.type === 'hour')?.value ?? '0');
+  const minute = parseInt(parts.find((p) => p.type === 'minute')?.value ?? '0');
+  return { hour, minute };
+}
 
 interface Props {
   onTransactionSubmitted: () => void;
@@ -20,29 +47,26 @@ interface Props {
 export default function SimulatorSection({ onTransactionSubmitted }: Props) {
   const { t } = useLanguage();
   const [region, setRegion] = useState('');
-  const [hour, setHour] = useState(20);
-  const [minute, setMinute] = useState(0);
-  const [showPicker, setShowPicker] = useState(true);
+  const [localTime, setLocalTime] = useState<{ hour: number; minute: number } | null>(null);
   const [result, setResult] = useState<Transaction | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const handleConfirm = useCallback(async (h: number, m: number) => {
-    setHour(h);
-    setMinute(m);
+  // Update local clock every minute when a region is selected
+  useEffect(() => {
+    if (!region) { setLocalTime(null); return; }
+    setLocalTime(getLocalTime(region));
+    const id = setInterval(() => setLocalTime(getLocalTime(region)), 60_000);
+    return () => clearInterval(id);
+  }, [region]);
 
-    if (!region) {
-      setError('Please select a region first.');
-      return;
-    }
-
+  const handleSubmit = useCallback(async () => {
+    if (!region) { setError('Please select a region first.'); return; }
     setError('');
     setLoading(true);
     setResult(null);
-
     try {
       const res = await submitTransaction({
-        amount: 100,
         currency: CURRENCIES[region] ?? 'USD',
         region,
       });
@@ -59,48 +83,58 @@ export default function SimulatorSection({ onTransactionSubmitted }: Props) {
     }
   }, [region, onTransactionSubmitted]);
 
-  const handleCancel = () => {
-    setResult(null);
-    setError('');
-    setShowPicker(false);
-  };
-
-  const displayTime = `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
+  const pad = (n: number) => String(n).padStart(2, '0');
 
   return (
     <div className={styles.section}>
       <div className={styles.left}>
         <CountrySearch value={region} onChange={setRegion} />
 
-        <div className={styles.pickerWrapper}>
-          {showPicker ? (
-            <TimePicker
-              hour={hour}
-              minute={minute}
-              onConfirm={handleConfirm}
-              onCancel={handleCancel}
-            />
-          ) : (
-            <button
-              className={styles.togglePicker}
-              onClick={() => setShowPicker(true)}
-              type="button"
-            >
-              ▼ {t.enterTime}: {displayTime}
-            </button>
-          )}
+        <div className={styles.picker}>
+          <span className={styles.pickerTitle}>{t.enterTime}</span>
+
+          <div className={styles.pickerInputs}>
+            <div className={styles.pickerField}>
+              <div className={styles.timeBox}>
+                {localTime ? pad(localTime.hour) : '--'}
+              </div>
+              <span className={styles.fieldLabel}>{t.hour}</span>
+            </div>
+
+            <span className={styles.separator}>:</span>
+
+            <div className={styles.pickerField}>
+              <div className={styles.timeBox}>
+                {localTime ? pad(localTime.minute) : '--'}
+              </div>
+              <span className={styles.fieldLabel}>{t.minute}</span>
+            </div>
+          </div>
+
+          <div className={styles.pickerActions}>
+            <svg className={styles.clockIcon} width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <circle cx="12" cy="12" r="9" stroke="#49454F" strokeWidth="2" />
+              <path d="M12 7V12L15 14" stroke="#49454F" strokeWidth="2" strokeLinecap="round" />
+            </svg>
+            <div className={styles.pickerButtons}>
+              <button className={styles.cancelBtn} onClick={() => { setResult(null); setError(''); }} type="button">
+                {t.cancel}
+              </button>
+              <button className={styles.okBtn} onClick={handleSubmit} type="button" disabled={loading}>
+                {loading ? '...' : t.ok}
+              </button>
+            </div>
+          </div>
         </div>
 
-        {loading && <p className={styles.loading}>{t.submitting}</p>}
         {error && <p className={styles.error}>{error}</p>}
+
         {result && (
           <div className={`${styles.result} ${result.status === 'Approved' ? styles.approved : styles.rejected}`}>
             <strong>{t.submitResult}:</strong>{' '}
             <span>{result.status === 'Approved' ? t.approved : t.rejected}</span>
             {result.localTime && (
-              <p className={styles.reason}>
-                {t.time}: {result.localTime} — {result.region}
-              </p>
+              <p className={styles.reason}>{t.time}: {result.localTime} — {result.region}</p>
             )}
             {result.rejectionReason && (
               <p className={styles.reason}>{result.rejectionReason}</p>

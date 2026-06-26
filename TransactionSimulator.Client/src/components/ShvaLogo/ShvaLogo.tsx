@@ -3,19 +3,46 @@ import styles from './ShvaLogo.module.css';
 export default function ShvaLogo() {
   return (
     <div className={styles.logo}>
-      <svg width="38" height="38" viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <svg width="42" height="42" viewBox="0 0 42 42" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="shvaGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#00BCD4" />
+            <stop offset="100%" stopColor="#4A90D9" />
+          </linearGradient>
+        </defs>
+        {/* Outer arc — top-right, clockwise */}
         <path
-          d="M19 4C10.716 4 4 10.716 4 19C4 27.284 10.716 34 19 34C27.284 34 34 27.284 34 19"
-          stroke="#65558F"
-          strokeWidth="3"
+          d="M21 6 C30.941 6 39 14.059 39 24 C39 30 36 35 31 38"
+          stroke="url(#shvaGrad)"
+          strokeWidth="3.5"
           strokeLinecap="round"
+          fill="none"
         />
-        <path d="M34 19L28 13M34 19L28 25" stroke="#65558F" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+        {/* Arrowhead on outer arc */}
         <path
-          d="M13 14C13 14 15 12 19 12C23 12 25 14.5 25 17C25 19.5 23 21 19 21C15 21 13 22.5 13 25C13 27.5 15 29 19 29C23 29 25 27 25 27"
-          stroke="#4A3A7A"
-          strokeWidth="2.5"
+          d="M31 38 L26 35 M31 38 L34 33"
+          stroke="url(#shvaGrad)"
+          strokeWidth="3.5"
           strokeLinecap="round"
+          strokeLinejoin="round"
+          fill="none"
+        />
+        {/* Inner arc — bottom-left, counter-clockwise */}
+        <path
+          d="M21 36 C11.059 36 3 27.941 3 18 C3 12 6 7 11 4"
+          stroke="url(#shvaGrad)"
+          strokeWidth="3.5"
+          strokeLinecap="round"
+          fill="none"
+        />
+        {/* Arrowhead on inner arc */}
+        <path
+          d="M11 4 L16 7 M11 4 L8 9"
+          stroke="url(#shvaGrad)"
+          strokeWidth="3.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          fill="none"
         />
       </svg>
       <span className={styles.text}>shva</span>

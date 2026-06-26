@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
 import styles from './CountrySearch.module.css';
 
-const COUNTRIES = ['France', 'Israel', 'Cyprus', 'Italy'];
+const COUNTRIES = ['Israel', 'France', 'USA', 'Japan', 'UK', 'Germany', 'India'];
 
 interface Props {
   value: string;
