@@ -1,9 +1,10 @@
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
+using TransactionSimulator.Api.Common;
 using TransactionSimulator.Api.Features.Transactions;
 
-namespace TransactionSimulator.Api.Common;
+namespace TransactionSimulator.Api.Extensions;
 
 public class SubmitTransactionSchemaFilter : ISchemaFilter
 {

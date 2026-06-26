@@ -1,5 +1,4 @@
 using Microsoft.OpenApi.Models;
-using TransactionSimulator.Api.Common;
 
 namespace TransactionSimulator.Api.Extensions;
 
