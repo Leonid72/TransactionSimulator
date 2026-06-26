@@ -1,0 +1,38 @@
+# .NET build artifacts
+**/bin/
+**/obj/
+
+# Git
+.git/
+.gitignore
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Logs
+*.log
+logs/
+
+# React / Node
+**/node_modules/
+**/build/
+**/dist/
+**/.next/
+**/coverage/
+**/.env
+**/.env.local
+**/.env.development
+**/.env.production
+
+# Docker
+**/docker-compose*.yml
+Dockerfile*
+.dockerignore
+
+# Misc
+**/*.md
+.editorconfig

@@ -1,0 +1,48 @@
+services:
+
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: transaction-sqlserver
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: "Admin123!"
+      MSSQL_PID: "Express"
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver_data:/var/opt/mssql
+    healthcheck:
+      test: ["CMD", "/opt/mssql-tools18/bin/sqlcmd", "-S", "localhost", "-U", "sa", "-P", "Admin123!", "-Q", "SELECT 1", "-No"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: transaction-api
+    environment:
+      ASPNETCORE_ENVIRONMENT: Docker
+      ASPNETCORE_URLS: "http://+:8080"
+      Database__Provider: SqlServer
+      Database__ApplyMigrationsOnStartup: "true"
+      ConnectionStrings__DefaultConnection: "Server=sqlserver,1433;Database=TransactionSimulatorDb;User Id=sa;Password=Admin123!;TrustServerCertificate=True"
+      Jwt__Issuer: TransactionSimulator.Api
+      Jwt__Audience: TransactionSimulator.Client
+      Jwt__Key: "DOCKER_SECRET_KEY_CHANGE_ME_32_PLUS_CHARS"
+      Jwt__ExpiresMinutes: "60"
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+
+volumes:
+  sqlserver_data:

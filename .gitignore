@@ -1,0 +1,56 @@
+## .NET
+**/bin/
+**/obj/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+## Visual Studio
+.vs/
+*.rsuser
+
+## Rider
+.idea/
+*.sln.iml
+
+## Build results
+[Dd]ebug/
+[Rr]elease/
+[Pp]ublish/
+
+## NuGet
+*.nupkg
+*.snupkg
+.nuget/
+packages/
+
+## Logs
+*.log
+logs/
+
+## SQLite (dev only)
+*.db
+*.db-shm
+*.db-wal
+
+## User secrets
+**/secrets.json
+
+## React / Node
+**/node_modules/
+**/build/
+**/dist/
+**/.next/
+**/coverage/
+**/.env
+**/.env.local
+**/.env.development.local
+**/.env.production.local
+
+## OS
+.DS_Store
+Thumbs.db
+
+## Docker
+docker-compose.override.yml
