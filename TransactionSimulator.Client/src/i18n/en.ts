@@ -31,6 +31,7 @@ const en = {
   rejectionReason: 'Outside banking hours (08:00–18:00)',
   passwordHint: 'Min 8 chars, uppercase, lowercase, digit',
   invalidEmail: 'Please enter a valid email address',
+  invalidPassword: 'Min 8 chars, uppercase, lowercase and digit required',
   emailExists: 'An account with this email already exists',
   loginFailed: 'Invalid email or password',
   userNotFound: 'No account found with this email address',

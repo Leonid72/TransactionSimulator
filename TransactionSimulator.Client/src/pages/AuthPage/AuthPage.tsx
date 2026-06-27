@@ -38,9 +38,11 @@ export default function AuthPage() {
   const [fullName, setFullName] = useState('');
   const [error, setError] = useState('');
   const [emailError, setEmailError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
   const [loading, setLoading] = useState(false);
 
   const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
 
   const validateEmail = (val: string) => {
     if (!EMAIL_REGEX.test(val)) { setEmailError(t.invalidEmail); return false; }
@@ -48,9 +50,18 @@ export default function AuthPage() {
     return true;
   };
 
+  const validatePassword = (val: string) => {
+    if (!PASSWORD_REGEX.test(val)) { setPasswordError(t.invalidPassword); return false; }
+    setPasswordError('');
+    return true;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!validateEmail(email)) return;
+    const emailOk = validateEmail(email);
+    const passwordOk = mode === 'register' ? validatePassword(password) : password.length > 0;
+    if (!passwordOk && mode === 'register') setPasswordError(t.invalidPassword);
+    if (!emailOk || (mode === 'register' && !passwordOk)) return;
     setError('');
     setLoading(true);
 
@@ -131,14 +142,18 @@ export default function AuthPage() {
           <div className={styles.field}>
             <label className={styles.label}>{t.password}</label>
             <input
-              className={styles.input}
+              className={`${styles.input} ${passwordError ? styles.inputError : ''}`}
               type="password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e) => { setPassword(e.target.value); if (passwordError) validatePassword(e.target.value); }}
+              onBlur={(e) => { if (mode === 'register') validatePassword(e.target.value); }}
               required
               autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
             />
-            {mode === 'register' && <span className={styles.hint}>{t.passwordHint}</span>}
+            {passwordError
+              ? <span className={styles.fieldError}>{passwordError}</span>
+              : mode === 'register' && <span className={styles.hint}>{t.passwordHint}</span>
+            }
           </div>
 
           {error && <p className={styles.error}>{error}</p>}
@@ -152,7 +167,7 @@ export default function AuthPage() {
           {mode === 'login' ? t.noAccount : t.hasAccount}{' '}
           <button
             className={styles.toggleBtn}
-            onClick={() => { setMode(mode === 'login' ? 'register' : 'login'); setError(''); }}
+            onClick={() => { setMode(mode === 'login' ? 'register' : 'login'); setError(''); setPasswordError(''); setEmailError(''); }}
             type="button"
           >
             {mode === 'login' ? t.signUp : t.signIn}

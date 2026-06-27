@@ -33,6 +33,7 @@ const he: Translations = {
   rejectionReason: 'מחוץ לשעות הבנקאות (08:00–18:00)',
   passwordHint: 'מינימום 8 תווים, אות גדולה, אות קטנה, ספרה',
   invalidEmail: 'נא להזין כתובת אימייל תקינה',
+  invalidPassword: 'מינימום 8 תווים, אות גדולה, אות קטנה וספרה נדרשים',
   emailExists: 'חשבון עם אימייל זה כבר קיים',
   loginFailed: 'אימייל או סיסמה שגויים',
   userNotFound: 'לא נמצא חשבון עם כתובת אימייל זו',
