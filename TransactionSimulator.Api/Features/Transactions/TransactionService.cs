@@ -23,31 +23,26 @@ public class TransactionService(AppDbContext dbContext) : ITransactionService
                          ?? user.FindFirstValue(ClaimTypes.Email)
                          ?? string.Empty;
 
-        var tz       = RegionTimezones.Resolve(request.Region)!;
-        var utcNow   = DateTime.UtcNow;
-        var localNow = TimeZoneInfo.ConvertTimeFromUtc(utcNow, tz);
-
-        var withinHours = localNow.Hour >= BankingStart && localNow.Hour < BankingEnd;
+        var withinHours = request.Hour >= BankingStart && request.Hour < BankingEnd;
 
         var transaction = new Transaction
         {
             UserId          = userId,
             CardHolder      = cardHolder,
-            Amount          = request.Amount,
-            Currency        = request.Currency.ToUpperInvariant(),
             Region          = request.Region,
-            SubmittedAtUtc  = utcNow,
-            LocalTime       = localNow,
+            Hour            = request.Hour,
+            Minute          = request.Minute,
+            SubmittedAtUtc  = DateTime.UtcNow,
             Status          = withinHours ? TransactionStatus.Approved : TransactionStatus.Rejected,
             RejectionReason = withinHours
                 ? null
-                : $"Submitted at {localNow:HH:mm} local time in {request.Region}. Banking hours: {BankingStart:D2}:00–{BankingEnd:D2}:00.",
+                : $"Submitted at {request.Hour:D2}:{request.Minute:D2} local time in {request.Region}. Banking hours: {BankingStart:D2}:00–{BankingEnd:D2}:00.",
         };
 
         dbContext.Transactions.Add(transaction);
         await dbContext.SaveChangesAsync();
 
-        return MapToResponse(transaction, localNow);
+        return MapToResponse(transaction);
     }
 
     public async Task<List<TransactionResponse>> GetApprovedAsync(ClaimsPrincipal user)
@@ -64,28 +59,24 @@ public class TransactionService(AppDbContext dbContext) : ITransactionService
             {
                 Id              = x.Id,
                 CardHolder      = x.CardHolder,
-                Amount          = x.Amount,
-                Currency        = x.Currency,
                 Region          = x.Region,
+                LocalTime       = $"{x.Hour:D2}:{x.Minute:D2}",
                 Status          = x.Status.ToString(),
                 RejectionReason = x.RejectionReason,
-                LocalTime       = x.LocalTime.ToString("yyyy-MM-dd HH:mm:ss"),
                 SubmittedAtUtc  = x.SubmittedAtUtc,
             })
             .ToListAsync();
     }
 
-    private static TransactionResponse MapToResponse(Transaction transaction, DateTime localNow) =>
+    private static TransactionResponse MapToResponse(Transaction transaction) =>
         new()
         {
             Id              = transaction.Id,
             CardHolder      = transaction.CardHolder,
-            Amount          = transaction.Amount,
-            Currency        = transaction.Currency,
             Region          = transaction.Region,
+            LocalTime       = $"{transaction.Hour:D2}:{transaction.Minute:D2}",
             Status          = transaction.Status.ToString(),
             RejectionReason = transaction.RejectionReason,
-            LocalTime       = localNow.ToString("yyyy-MM-dd HH:mm:ss"),
             SubmittedAtUtc  = transaction.SubmittedAtUtc,
         };
 }

@@ -22,8 +22,6 @@ public class AppDbContext : IdentityDbContext<AppUser, IdentityRole, string>
         {
             entity.ToTable("Transactions");
             entity.HasKey(x => x.Id);
-            entity.Property(x => x.Amount).HasPrecision(18, 2);
-            entity.Property(x => x.Currency).HasMaxLength(3).IsRequired();
             entity.Property(x => x.Region).HasMaxLength(50).IsRequired();
             entity.Property(x => x.Status)
                   .HasConversion<string>()
