@@ -6,3 +6,4 @@ export const getApprovedTransactions = () =>
 
 export const submitTransaction = (payload: SubmitRequest) =>
   client.post<ApiResponse<Transaction>>('/transactions/submit', payload);
+

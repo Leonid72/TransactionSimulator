@@ -1,7 +1,6 @@
 export interface Transaction {
   id: string;
   cardHolder: string;
-  amount: number;
   currency: string;
   region: string;
   status: 'Approved' | 'Rejected';
@@ -25,6 +24,7 @@ export interface AuthData {
 }
 
 export interface SubmitRequest {
-  currency: string;
   region: string;
+  hour: number;
+  minute: number;
 }

@@ -14,7 +14,9 @@ client.interceptors.request.use((config) => {
 client.interceptors.response.use(
   (res) => res,
   (err) => {
-    if (err.response?.status === 401) {
+    const isAuthRoute = err.config?.url?.includes('/auth/');
+    // Only force-logout on 401 for authenticated routes, not login/register
+    if (err.response?.status === 401 && !isAuthRoute) {
       localStorage.removeItem('accessToken');
       window.location.reload();
     }

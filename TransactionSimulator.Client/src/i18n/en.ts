@@ -28,6 +28,14 @@ const en = {
   noTransactions: 'No approved transactions yet.',
   eng: 'ENG',
   hebrew: 'Hebrew',
+  rejectionReason: 'Outside banking hours (08:00–18:00)',
+  passwordHint: 'Min 8 chars, uppercase, lowercase, digit',
+  invalidEmail: 'Please enter a valid email address',
+  emailExists: 'An account with this email already exists',
+  loginFailed: 'Invalid email or password',
+  userNotFound: 'No account found with this email address',
+  registerFailed: 'Registration failed. Please try again',
+  connectionError: 'Could not connect to server. Please try again',
 };
 
 export default en;

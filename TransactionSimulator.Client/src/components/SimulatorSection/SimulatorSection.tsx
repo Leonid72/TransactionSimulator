@@ -1,19 +1,10 @@
 import { useState, useCallback, useEffect } from 'react';
 import CountrySearch from '../CountrySearch/CountrySearch';
+import Toast from '../Toast/Toast';
 import { useLanguage } from '../../context/LanguageContext';
 import { submitTransaction } from '../../api/transactions';
 import type { Transaction } from '../../types';
 import styles from './SimulatorSection.module.css';
-
-const CURRENCIES: Record<string, string> = {
-  Israel: 'ILS',
-  France: 'EUR',
-  USA: 'USD',
-  Japan: 'JPY',
-  UK: 'GBP',
-  Germany: 'EUR',
-  India: 'INR',
-};
 
 const TIMEZONES: Record<string, string> = {
   Israel: 'Asia/Jerusalem',
@@ -28,16 +19,16 @@ const TIMEZONES: Record<string, string> = {
 function getLocalTime(region: string): { hour: number; minute: number } {
   const tz = TIMEZONES[region];
   if (!tz) return { hour: 0, minute: 0 };
-  const now = new Date();
   const parts = new Intl.DateTimeFormat('en-US', {
     timeZone: tz,
     hour: 'numeric',
     minute: 'numeric',
     hour12: false,
-  }).formatToParts(now);
-  const hour = parseInt(parts.find((p) => p.type === 'hour')?.value ?? '0');
-  const minute = parseInt(parts.find((p) => p.type === 'minute')?.value ?? '0');
-  return { hour, minute };
+  }).formatToParts(new Date());
+  return {
+    hour: parseInt(parts.find((p) => p.type === 'hour')?.value ?? '0'),
+    minute: parseInt(parts.find((p) => p.type === 'minute')?.value ?? '0'),
+  };
 }
 
 interface Props {
@@ -52,7 +43,6 @@ export default function SimulatorSection({ onTransactionSubmitted }: Props) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // Update local clock every minute when a region is selected
   useEffect(() => {
     if (!region) { setLocalTime(null); return; }
     setLocalTime(getLocalTime(region));
@@ -67,8 +57,9 @@ export default function SimulatorSection({ onTransactionSubmitted }: Props) {
     setResult(null);
     try {
       const res = await submitTransaction({
-        currency: CURRENCIES[region] ?? 'USD',
         region,
+        hour: localTime?.hour ?? 0,
+        minute: localTime?.minute ?? 0,
       });
       if (res.data.isSuccessful) {
         setResult(res.data.data);
@@ -81,7 +72,7 @@ export default function SimulatorSection({ onTransactionSubmitted }: Props) {
     } finally {
       setLoading(false);
     }
-  }, [region, onTransactionSubmitted]);
+  }, [region, localTime, onTransactionSubmitted]);
 
   const pad = (n: number) => String(n).padStart(2, '0');
 
@@ -117,29 +108,43 @@ export default function SimulatorSection({ onTransactionSubmitted }: Props) {
               <path d="M12 7V12L15 14" stroke="#49454F" strokeWidth="2" strokeLinecap="round" />
             </svg>
             <div className={styles.pickerButtons}>
-              <button className={styles.cancelBtn} onClick={() => { setResult(null); setError(''); }} type="button">
+              <button
+                className={styles.cancelBtn}
+                onClick={() => { setResult(null); setError(''); }}
+                type="button"
+              >
                 {t.cancel}
               </button>
-              <button className={styles.okBtn} onClick={handleSubmit} type="button" disabled={loading}>
+              <button
+                className={styles.okBtn}
+                onClick={handleSubmit}
+                type="button"
+                disabled={loading}
+              >
                 {loading ? '...' : t.ok}
               </button>
             </div>
           </div>
         </div>
 
-        {error && <p className={styles.error}>{error}</p>}
+        {error && (
+          <Toast
+            title={error}
+            type="error"
+            onClose={() => setError('')}
+          />
+        )}
 
         {result && (
-          <div className={`${styles.result} ${result.status === 'Approved' ? styles.approved : styles.rejected}`}>
-            <strong>{t.submitResult}:</strong>{' '}
-            <span>{result.status === 'Approved' ? t.approved : t.rejected}</span>
-            {result.localTime && (
-              <p className={styles.reason}>{t.time}: {result.localTime} — {result.region}</p>
-            )}
-            {result.rejectionReason && (
-              <p className={styles.reason}>{result.rejectionReason}</p>
-            )}
-          </div>
+          <Toast
+            type={result.status === 'Approved' ? 'success' : 'error'}
+            title={`${t.submitResult}: ${result.status === 'Approved' ? t.approved : t.rejected}`}
+            lines={[
+              result.localTime ? `${t.time}: ${result.localTime} — ${result.region}` : '',
+              result.status === 'Rejected' ? t.rejectionReason : '',
+            ].filter(Boolean)}
+            onClose={() => setResult(null)}
+          />
         )}
       </div>
 

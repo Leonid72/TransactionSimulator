@@ -19,7 +19,7 @@ services:
 
   api:
     build:
-      context: .
+      context: ./TransactionSimulator.Api
       dockerfile: Dockerfile
     container_name: transaction-api
     environment:
@@ -43,6 +43,18 @@ services:
     depends_on:
       sqlserver:
         condition: service_healthy
+
+  client:
+    build:
+      context: ./TransactionSimulator.Client
+      dockerfile: Dockerfile
+    container_name: transaction-client
+    ports:
+      - "3000:80"
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
 
 volumes:
   sqlserver_data:

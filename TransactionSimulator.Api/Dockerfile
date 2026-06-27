@@ -4,10 +4,9 @@ EXPOSE 8080
 
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
-COPY ["TransactionSimulator.Api/TransactionSimulator.Api.csproj", "TransactionSimulator.Api/"]
-RUN dotnet restore "TransactionSimulator.Api/TransactionSimulator.Api.csproj"
+COPY ["TransactionSimulator.Api.csproj", "."]
+RUN dotnet restore "TransactionSimulator.Api.csproj"
 COPY . .
-WORKDIR "/src/TransactionSimulator.Api"
 RUN dotnet build "TransactionSimulator.Api.csproj" -c Release -o /app/build
 
 FROM build AS publish
