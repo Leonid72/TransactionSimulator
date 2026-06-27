@@ -8,7 +8,7 @@ A full-stack web application that simulates banking transaction approvals based 
 
 A transaction is **Approved** if the submitted time falls within standard banking hours **(08:00–18:00)** of the selected region. Otherwise it is **Rejected**.
 
-The user selects a region and provides a local time — the backend validates whether that time is within banking hours for that country.
+The user selects a region and provides a local time (hour and minute) — the backend validates whether that time is within banking hours for that country.
 
 ---
 
@@ -49,6 +49,7 @@ TransactionSimulator/
 │   ├── Program.cs                            # App entry point, DI, middleware
 │   ├── appsettings.json                      # Base configuration
 │   ├── appsettings.Development.json          # Dev overrides (JWT, CORS, logging)
+│   ├── appsettings.Production.json           # Production overrides
 │   │
 │   ├── Common/                               # Cross-cutting concerns
 │   │   ├── ApiResponse.cs                    # Unified response wrapper
@@ -82,7 +83,8 @@ TransactionSimulator/
 │       │   ├── IAuthService.cs
 │       │   ├── AuthService.cs                # Register, Login, JWT generation
 │       │   ├── AuthEndpoints.cs              # POST /api/auth/register & /login
-│       │   ├── LoginRequest.cs / LoginResponse.cs
+│       │   ├── LoginRequest.cs
+│       │   ├── LoginResponse.cs
 │       │   ├── RegisterRequest.cs
 │       │   ├── LoginRequestValidator.cs
 │       │   └── RegisterRequestValidator.cs
@@ -103,14 +105,15 @@ TransactionSimulator/
     │   │   ├── AuthContext.tsx               # JWT token management
     │   │   └── LanguageContext.tsx           # i18n support
     │   ├── pages/
-    │   │   ├── AuthPage/                     # Login / Register
-    │   │   └── MainPage/                     # Transaction simulator
+    │   │   ├── AuthPage/                     # Login / Register page
+    │   │   └── MainPage/                     # Transaction simulator page
     │   └── components/
-    │       ├── Header/
+    │       ├── Header/                       # App header with logout
+    │       ├── ShvaLogo/                     # Logo component
     │       ├── TimePicker/                   # Hour & minute selector
-    │       ├── CountrySearch/                # Region selector
+    │       ├── CountrySearch/                # Region selector with search
     │       ├── SimulatorSection/             # Submit transaction form
-    │       ├── ApprovedTransactions/         # Display approved results
+    │       ├── ApprovedTransactions/         # Approved results cards
     │       └── Toast/                        # Notifications
     └── package.json
 ```
@@ -135,6 +138,23 @@ TransactionSimulator/
 | Method | Endpoint | Auth | Description |
 |---|---|---|---|
 | GET | `/health` | Public | Service and database status |
+
+---
+
+### Register Request
+```json
+{
+  "email": "user@example.com",
+  "password": "Password1",
+  "fullName": "John Doe"
+}
+```
+
+**Password requirements:**
+- Minimum 8 characters
+- At least one uppercase letter (A–Z)
+- At least one lowercase letter (a–z)
+- At least one digit (0–9)
 
 ### Transaction Request
 ```json
@@ -176,7 +196,7 @@ docker-compose up -d
 | Service | URL |
 |---|---|
 | React Client | http://localhost:3000 |
-| API Swagger | http://localhost:8080/swagger |
+| API Swagger | http://localhost:8080/swagger/index.html |
 | SQL Server | localhost:1433 |
 
 To stop:
@@ -199,8 +219,8 @@ cd TransactionSimulator.Api
 dotnet restore
 dotnet run
 ```
-API runs on: `https://localhost:7217`
-Swagger: `https://localhost:7217/swagger`
+- API: `https://localhost:7217`
+- Swagger: `https://localhost:7217/swagger/index.html`
 
 #### 3. Run the React Client
 ```bash
@@ -208,7 +228,7 @@ cd TransactionSimulator.Client
 npm install
 npm run dev
 ```
-Client runs on: `http://localhost:5173`
+- Client: `http://localhost:5173`
 
 ---
 
@@ -228,6 +248,9 @@ Client runs on: `http://localhost:5173`
     "Audience": "TransactionSimulator.Client",
     "Key": "YOUR_SECRET_KEY_32_CHARS_MINIMUM",
     "ExpiresMinutes": 60
+  },
+  "Cors": {
+    "AllowedOrigins": []
   }
 }
 ```
@@ -235,9 +258,10 @@ Client runs on: `http://localhost:5173`
 ### Docker Environment Variables
 Configured in `docker-compose.yml`:
 - `ASPNETCORE_ENVIRONMENT` — `Docker`
-- `ConnectionStrings__DefaultConnection` — SQL Server connection
-- `Jwt__Key` — JWT signing key
 - `ASPNETCORE_URLS` — `http://+:8080`
+- `ConnectionStrings__DefaultConnection` — SQL Server connection string
+- `Jwt__Key` — JWT signing key
+- `Jwt__ExpiresMinutes` — Token expiry in minutes
 
 ---
 
