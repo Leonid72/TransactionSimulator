@@ -37,95 +37,123 @@ The user selects a region and provides a local time (hour and minute) — the ba
 
 ---
 
+## Solution Architecture
+
+The backend follows **Clean Architecture** split into three projects with a strict one-way dependency rule:
+
+```
+TransactionSimulator.Api  →  TransactionSimulator.Infrastructure  →  TransactionSimulator.Core
+```
+
+| Project | Responsibility | External Dependencies |
+|---|---|---|
+| **Core** | Entities, interfaces, contracts, shared models | ASP.NET Core Identity (entity base only) |
+| **Infrastructure** | EF Core DbContext, migrations, DB extensions | EF Core, SQL Server, Core |
+| **Api** | Endpoints, services, validators, middleware, DI wiring | FluentValidation, Swashbuckle, JWT, Infrastructure, Core |
+
+**Core has no knowledge of Infrastructure or Api.** Infrastructure has no knowledge of Api. Business logic and contracts never depend on delivery or persistence details.
+
+---
+
 ## Project Structure
 
 ```
 TransactionSimulator/
-├── docker-compose.yml                        # Orchestrates API + SQL Server + Client
-├── .gitignore
-├── .dockerignore
+├── TransactionSimulator.sln
+├── docker-compose.yml                              # Orchestrates SQL Server + API + Client
+├── azure-pipelines.yml                             # Azure DevOps CI/CD (Build → Deploy)
+├── .github/workflows/deploy.yml                    # GitHub Actions (disabled — Azure DevOps used)
 │
-├── TransactionSimulator.Api/                 # .NET 8 Backend
-│   ├── Dockerfile
-│   ├── Program.cs                            # App entry point, DI, middleware pipeline
-│   ├── appsettings.json                      # Base configuration
-│   ├── appsettings.Development.json          # Dev overrides (JWT, CORS, logging)
-│   ├── appsettings.Production.json           # Production overrides
+├── TransactionSimulator.Core/                      # Domain layer — no framework deps
+│   ├── Entities/
+│   │   ├── AppUser.cs                              # Identity user (extends IdentityUser)
+│   │   ├── Transaction.cs                          # Transaction entity
+│   │   ├── TransactionStatus.cs                    # Enum: Approved / Rejected
+│   │   └── ApplicationLog.cs                       # Error log entity
+│   ├── Interfaces/
+│   │   ├── IAuthService.cs                         # Register + Login contract
+│   │   └── ITransactionService.cs                  # Submit + GetApproved contract
+│   ├── Contracts/
+│   │   ├── Auth/
+│   │   │   ├── LoginRequest.cs                     # record LoginRequest(Email, Password)
+│   │   │   ├── LoginResponse.cs                    # JWT + user info
+│   │   │   └── RegisterRequest.cs                  # record RegisterRequest(Email, Password, FullName)
+│   │   └── Transactions/
+│   │       ├── SubmitTransactionRequest.cs         # record SubmitTransactionRequest(Region, Hour, Minute)
+│   │       └── TransactionResponse.cs              # Mapped response DTO
+│   └── Common/
+│       ├── ApiResponse.cs                          # Unified wrapper ApiResponse<T>
+│       ├── JwtOptions.cs                           # JWT config model (bound via IOptions<>)
+│       └── RegionTimezones.cs                      # Region → IANA timezone resolver
+│
+├── TransactionSimulator.Infrastructure/            # Persistence layer
+│   ├── Data/
+│   │   ├── AppDbContext.cs                         # EF Core DbContext (Identity + Transactions + Logs)
+│   │   ├── AppDbContextFactory.cs                  # Design-time factory for dotnet ef migrations
+│   │   └── Migrations/                             # EF Core auto-generated migration files
+│   └── Extensions/
+│       └── DatabaseExtensions.cs                   # AddDatabase() + ApplyMigrationsAsync()
+│
+├── TransactionSimulator.Api/                       # Presentation / composition root
+│   ├── Dockerfile                                  # Multi-stage build (root context covers all 3 projects)
+│   ├── Program.cs                                  # DI wiring, middleware pipeline, app startup
+│   ├── appsettings.json                            # Base config
+│   ├── appsettings.Development.json                # Dev overrides (local SQL, JWT, logging)
+│   ├── appsettings.Docker.json                     # Docker overrides
+│   ├── appsettings.Production.json                 # Production overrides (Azure)
 │   │
-│   ├── Common/                               # Cross-cutting concerns
-│   │   ├── ApiResponse.cs                    # Unified response wrapper ApiResponse<T>
-│   │   ├── ErrorHandlingMiddleware.cs        # Global exception handler + DB logging
-│   │   ├── JwtOptions.cs                     # JWT configuration model
-│   │   └── RegionTimezones.cs                # IANA / Windows timezone resolver
+│   ├── Common/
+│   │   └── ErrorHandlingMiddleware.cs              # Global exception → ApiResponse<object> + DB log
 │   │
-│   ├── Data/                                 # Data access layer
-│   │   ├── AppDbContext.cs                   # EF Core DbContext
-│   │   ├── AppDbContextFactory.cs            # Design-time factory for migrations
-│   │   ├── Entities/
-│   │   │   ├── AppUser.cs                    # Identity user (extends IdentityUser)
-│   │   │   ├── Transaction.cs                # Transaction entity
-│   │   │   ├── TransactionStatus.cs          # Enum: Approved / Rejected
-│   │   │   └── ApplicationLog.cs             # Error log entity
-│   │   └── Migrations/                       # EF Core auto-generated migrations
+│   ├── Endpoints/
+│   │   ├── IEndpoint.cs                            # Interface: void MapEndpoint(IEndpointRouteBuilder)
+│   │   └── EndpointExtensions.cs                   # Assembly scan → registers all IEndpoints
 │   │
-│   ├── Endpoints/                            # IEndpoint infrastructure
-│   │   ├── IEndpoint.cs                      # Interface: void MapEndpoint(app)
-│   │   └── EndpointExtensions.cs             # Scans assembly, registers all IEndpoints
+│   ├── Extensions/
+│   │   ├── IdentityExtensions.cs                   # AddIdentityServices (Identity + JWT via IOptions)
+│   │   ├── SwaggerExtensions.cs                    # AddSwaggerWithJwt / UseSwaggerWithUI
+│   │   ├── CorsExtensions.cs                       # AddCorsPolicy (env-based origins)
+│   │   └── SubmitTransactionSchemaFilter.cs        # Swagger schema: region as dropdown enum
 │   │
-│   ├── Extensions/                           # Service registration extension methods
-│   │   ├── DatabaseExtensions.cs             # AddDatabase / ApplyMigrationsAsync
-│   │   ├── IdentityExtensions.cs             # AddIdentityServices (Identity + JWT via IOptions)
-│   │   ├── SwaggerExtensions.cs              # AddSwaggerWithJwt / UseSwaggerWithUI
-│   │   ├── CorsExtensions.cs                 # AddCorsPolicy (env-based origins)
-│   │   └── SubmitTransactionSchemaFilter.cs  # Swagger region dropdown (ISchemaFilter)
-│   │
-│   └── Features/                             # Vertical slice architecture
+│   └── Features/                                   # Vertical slice architecture
 │       ├── Auth/
-│       │   ├── IAuthService.cs
-│       │   ├── AuthService.cs                # Register, Login, JWT generation
-│       │   ├── AuthEndpoints.cs              # POST /api/auth/register & /login
-│       │   ├── LoginRequest.cs
-│       │   ├── LoginResponse.cs
-│       │   ├── RegisterRequest.cs
+│       │   ├── AuthService.cs                      # Implements IAuthService (register, login, JWT)
+│       │   ├── AuthEndpoints.cs                    # POST /api/auth/register & /login
 │       │   ├── LoginRequestValidator.cs
 │       │   └── RegisterRequestValidator.cs
 │       └── Transactions/
-│           ├── ITransactionService.cs
-│           ├── TransactionService.cs         # Banking hours business logic
-│           ├── TransactionsEndpoints.cs      # POST /submit & GET /approved
-│           ├── SubmitTransactionRequest.cs
-│           ├── SubmitTransactionRequestValidator.cs
-│           └── TransactionResponse.cs
+│           ├── TransactionService.cs               # Implements ITransactionService (banking hours logic)
+│           ├── TransactionsEndpoints.cs            # POST /api/transactions/submit & GET /approved
+│           └── SubmitTransactionRequestValidator.cs
 │
-└── TransactionSimulator.Client/              # React Frontend
-    ├── Dockerfile                            # Multi-stage: Node build + Nginx serve
-    ├── nginx.conf                            # Nginx config: static files + API proxy
+└── TransactionSimulator.Client/                    # React 18 + TypeScript frontend
+    ├── Dockerfile                                  # Multi-stage: Node build → Nginx serve
+    ├── nginx.conf                                  # Static files + /api/ reverse proxy to backend
     ├── src/
-    │   ├── App.tsx                           # Route guard: Auth vs Main
-    │   ├── main.tsx                          # React entry point
-    │   ├── types/
-    │   │   └── index.ts                      # TypeScript interfaces
+    │   ├── App.tsx                                 # Route guard: Auth page vs Main page
+    │   ├── main.tsx                                # React entry point
+    │   ├── types/index.ts                          # Shared TypeScript interfaces
     │   ├── api/
-    │   │   ├── client.ts                     # Axios instance + interceptors
-    │   │   ├── auth.ts                       # login / register API calls
-    │   │   └── transactions.ts               # submit / getApproved API calls
+    │   │   ├── client.ts                           # Axios instance + request/response interceptors
+    │   │   ├── auth.ts                             # login() / register() API calls
+    │   │   └── transactions.ts                     # submitTransaction() / getApprovedTransactions()
     │   ├── context/
-    │   │   ├── AuthContext.tsx               # JWT token state + localStorage
-    │   │   └── LanguageContext.tsx           # i18n (English / Hebrew)
+    │   │   ├── AuthContext.tsx                     # JWT state + localStorage persistence
+    │   │   └── LanguageContext.tsx                 # i18n (English / Hebrew)
     │   ├── i18n/
-    │   │   ├── en.ts                         # English translations
-    │   │   └── he.ts                         # Hebrew translations
+    │   │   ├── en.ts                               # English translations
+    │   │   └── he.ts                               # Hebrew translations
     │   ├── pages/
-    │   │   ├── AuthPage/                     # Login / Register page
-    │   │   └── MainPage/                     # Transaction simulator page
+    │   │   ├── AuthPage/                           # Login / Register page
+    │   │   └── MainPage/                           # Transaction simulator page
     │   └── components/
-    │       ├── Header/                       # App header with logout
-    │       ├── ShvaLogo/                     # Logo component
-    │       ├── TimePicker/                   # Hour & minute selector
-    │       ├── CountrySearch/                # Region selector with search
-    │       ├── SimulatorSection/             # Submit transaction form
-    │       ├── ApprovedTransactions/         # Approved results cards
-    │       └── Toast/                        # Auto-close notifications
+    │       ├── Header/                             # App header with logout button
+    │       ├── ShvaLogo/                           # Logo component
+    │       ├── TimePicker/                         # Hour & minute selector
+    │       ├── CountrySearch/                      # Region selector with search
+    │       ├── SimulatorSection/                   # Submit transaction form
+    │       ├── ApprovedTransactions/               # Approved results cards
+    │       └── Toast/                              # Auto-close notification toasts
     └── package.json
 ```
 
@@ -133,8 +161,17 @@ TransactionSimulator/
 
 ## Backend — Patterns & Best Practices
 
+### Clean Architecture (3-layer)
+Dependencies flow inward only — Core never imports Infrastructure or Api. This keeps domain logic and contracts free from database or web framework concerns.
+
+```
+Core         — entities, interfaces, DTOs, shared models (no EF, no HTTP)
+Infrastructure — EF Core DbContext, migrations, DB extension methods
+Api          — endpoints, services, validators, middleware (composition root)
+```
+
 ### Vertical Slice Architecture
-Each feature (Auth, Transactions) is self-contained in its own folder with its own endpoint, service, request/response models and validators. No shared layers that span features.
+Each feature (Auth, Transactions) is self-contained in its own folder inside the Api project with its own endpoint, service, and validators. Contracts and interfaces live in Core; no shared layers span features in the Api.
 
 ### IEndpoint Pattern
 Instead of a single large `Program.cs` with all routes, each feature registers its own endpoints:
@@ -500,6 +537,8 @@ Configured in `docker-compose.yml`:
 - `Jwt__Key` — JWT signing key
 - `Jwt__ExpiresMinutes` — Token expiry in minutes
 
+> **Note:** The API healthcheck uses `wget` (not `curl`) because `curl` is not installed in the `mcr.microsoft.com/dotnet/aspnet:8.0` base image. The client container waits for the API to become healthy before starting.
+
 ---
 
 ## Database
@@ -508,9 +547,34 @@ Configured in `docker-compose.yml`:
 - **Migrations:** Applied automatically on startup
 - **Tables:** `AspNetUsers`, `AspNetUserClaims`, `Transactions`, `ApplicationLogs`
 
-To create a new migration manually:
+To create a new migration manually (migrations live in the Infrastructure project; startup project is Api):
 ```bash
-cd TransactionSimulator.Api
-dotnet ef migrations add MigrationName
-dotnet ef database update
+dotnet ef migrations add MigrationName \
+  --project TransactionSimulator.Infrastructure \
+  --startup-project TransactionSimulator.Api
+
+dotnet ef database update \
+  --project TransactionSimulator.Infrastructure \
+  --startup-project TransactionSimulator.Api
 ```
+
+---
+
+## CI/CD — Azure DevOps
+
+The pipeline is defined in [`azure-pipelines.yml`](azure-pipelines.yml) and has two stages:
+
+| Stage | Steps |
+|---|---|
+| **Build** | Checkout from GitHub → build & push API Docker image to ACR → build & push Client Docker image to ACR |
+| **Deploy** | Deploy API image to Azure Container App → deploy Client image to Azure Container App |
+
+GitHub Actions (`deploy.yml`) is disabled — the Azure DevOps pipeline is the only active CI/CD path.
+
+### Required Pipeline Variables (set in Azure DevOps)
+| Variable | Description |
+|---|---|
+| `azureServiceConnection` | Azure Resource Manager service connection |
+| `containerRegistry` | ACR login server (e.g. `myregistry.azurecr.io`) |
+| `imageRepositoryApi` | ACR repository name for the API image |
+| `imageRepositoryClient` | ACR repository name for the Client image |
