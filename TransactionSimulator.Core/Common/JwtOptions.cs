@@ -1,4 +1,4 @@
-namespace TransactionSimulator.Api.Common;
+namespace TransactionSimulator.Core.Common;
 
 public class JwtOptions
 {

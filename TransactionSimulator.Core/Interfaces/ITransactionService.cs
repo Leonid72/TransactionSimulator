@@ -1,6 +1,7 @@
 using System.Security.Claims;
+using TransactionSimulator.Core.Contracts.Transactions;
 
-namespace TransactionSimulator.Api.Features.Transactions;
+namespace TransactionSimulator.Core.Interfaces;
 
 public interface ITransactionService
 {

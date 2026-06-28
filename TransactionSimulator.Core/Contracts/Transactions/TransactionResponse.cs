@@ -1,4 +1,4 @@
-namespace TransactionSimulator.Api.Features.Transactions;
+namespace TransactionSimulator.Core.Contracts.Transactions;
 
 public class TransactionResponse
 {

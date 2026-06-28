@@ -4,8 +4,9 @@ using System.Text.Json;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using TransactionSimulator.Api.Data;
-using TransactionSimulator.Api.Data.Entities;
+using TransactionSimulator.Core.Common;
+using TransactionSimulator.Core.Entities;
+using TransactionSimulator.Infrastructure.Data;
 
 namespace TransactionSimulator.Api.Common;
 
@@ -56,12 +57,7 @@ public class ErrorHandlingMiddleware(
             {
                 using var scope = scopeFactory.CreateScope();
                 var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-                db.ApplicationLogs.Add(new ApplicationLog
-                {
-                    Level   = level,
-                    Message = message,
-                    TraceId = traceId
-                });
+                db.ApplicationLogs.Add(new ApplicationLog { Level = level, Message = message, TraceId = traceId });
                 await db.SaveChangesAsync();
             }
             catch (Exception ex)
@@ -75,14 +71,7 @@ public class ErrorHandlingMiddleware(
         context.Response.ContentType = "application/json";
         context.Response.StatusCode  = (int)statusCode;
 
-        var response = new ApiResponse<object>
-        {
-            IsSuccessful = false,
-            Message      = message,
-            TraceId      = traceId
-        };
-
-        var payload = JsonSerializer.Serialize(response);
-        await context.Response.WriteAsync(payload);
+        var response = new ApiResponse<object> { IsSuccessful = false, Message = message, TraceId = traceId };
+        await context.Response.WriteAsync(JsonSerializer.Serialize(response));
     }
 }

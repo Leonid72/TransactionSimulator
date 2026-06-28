@@ -1,7 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
+using Microsoft.Extensions.Configuration;
 
-namespace TransactionSimulator.Api.Data;
+namespace TransactionSimulator.Infrastructure.Data;
 
 public class AppDbContextFactory : IDesignTimeDbContextFactory<AppDbContext>
 {

@@ -3,9 +3,9 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using TransactionSimulator.Api.Common;
-using TransactionSimulator.Api.Data;
-using TransactionSimulator.Api.Data.Entities;
+using TransactionSimulator.Core.Common;
+using TransactionSimulator.Core.Entities;
+using TransactionSimulator.Infrastructure.Data;
 
 namespace TransactionSimulator.Api.Extensions;
 
@@ -17,12 +17,12 @@ public static class IdentityExtensions
 
         services.AddIdentityCore<AppUser>(options =>
             {
-                options.Password.RequiredLength = 8;
-                options.Password.RequireUppercase = true;
-                options.Password.RequireLowercase = true;
-                options.Password.RequireDigit = false;
+                options.Password.RequiredLength        = 8;
+                options.Password.RequireUppercase      = true;
+                options.Password.RequireLowercase      = true;
+                options.Password.RequireDigit          = false;
                 options.Password.RequireNonAlphanumeric = false;
-                options.User.RequireUniqueEmail = true;
+                options.User.RequireUniqueEmail        = true;
             })
             .AddRoles<IdentityRole>()
             .AddEntityFrameworkStores<AppDbContext>()
@@ -35,7 +35,7 @@ public static class IdentityExtensions
         services.AddOptions<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme)
             .Configure<IOptions<JwtOptions>>((bearerOptions, jwtOptions) =>
             {
-                var opts = jwtOptions.Value;
+                var opts       = jwtOptions.Value;
                 var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(opts.Key));
 
                 bearerOptions.TokenValidationParameters = new TokenValidationParameters
@@ -52,7 +52,6 @@ public static class IdentityExtensions
             });
 
         services.AddAuthorization();
-
         return services;
     }
 }

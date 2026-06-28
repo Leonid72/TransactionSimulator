@@ -1,10 +1,13 @@
 using FluentValidation;
 using TransactionSimulator.Api.Common;
-using TransactionSimulator.Api.Data;
 using TransactionSimulator.Api.Endpoints;
 using TransactionSimulator.Api.Extensions;
 using TransactionSimulator.Api.Features.Auth;
 using TransactionSimulator.Api.Features.Transactions;
+using TransactionSimulator.Core.Common;
+using TransactionSimulator.Core.Interfaces;
+using TransactionSimulator.Infrastructure.Data;
+using TransactionSimulator.Infrastructure.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,13 +22,11 @@ builder.Services.AddEndpoints();
 
 var app = builder.Build();
 
-await app.ApplyMigrationsAsync();
+await app.Services.ApplyMigrationsAsync(app.Configuration);
 
 app.UseMiddleware<ErrorHandlingMiddleware>();
 
-var showSwagger = app.Environment.IsDevelopment()
-                  || app.Environment.IsEnvironment("Docker");
-
+var showSwagger = app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Docker");
 if (showSwagger)
     app.UseSwaggerWithUI();
 
@@ -37,28 +38,12 @@ app.UseAuthorization();
 app.MapGet("/health", async (AppDbContext db) =>
 {
     var dbHealthy = await db.Database.CanConnectAsync();
-
     return dbHealthy
-        ? Results.Ok(ApiResponse<object>.Success(new
-        {
-            Status    = "Healthy",
-            Database  = "Connected",
-            Timestamp = DateTime.UtcNow
-        }, "Service is healthy"))
-        : Results.Json(ApiResponse<object>.Success(new
-        {
-            Status    = "Unhealthy",
-            Database  = "Disconnected",
-            Timestamp = DateTime.UtcNow
-        }, "Database unavailable"), statusCode: 503);
+        ? Results.Ok(ApiResponse<object>.Success(new { Status = "Healthy", Database = "Connected", Timestamp = DateTime.UtcNow }, "Service is healthy"))
+        : Results.Json(ApiResponse<object>.Success(new { Status = "Unhealthy", Database = "Disconnected", Timestamp = DateTime.UtcNow }, "Database unavailable"), statusCode: 503);
 })
 .AllowAnonymous()
-.WithTags("Health")
-.WithSummary("Health check")
-.WithDescription("Returns service and database status.")
-.Produces<ApiResponse<object>>(200)
-.Produces<ApiResponse<object>>(503);
+.WithTags("Health");
 
 app.MapEndpoints();
-
 app.Run();

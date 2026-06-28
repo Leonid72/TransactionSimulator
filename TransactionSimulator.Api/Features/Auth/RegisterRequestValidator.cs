@@ -1,4 +1,5 @@
 using FluentValidation;
+using TransactionSimulator.Core.Contracts.Auth;
 
 namespace TransactionSimulator.Api.Features.Auth;
 

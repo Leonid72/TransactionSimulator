@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Identity;
 
-namespace TransactionSimulator.Api.Data.Entities;
+namespace TransactionSimulator.Core.Entities;
 
 public class AppUser : IdentityUser
 {

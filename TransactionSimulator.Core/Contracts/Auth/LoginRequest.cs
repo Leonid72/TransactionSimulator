@@ -1,3 +1,3 @@
-namespace TransactionSimulator.Api.Features.Auth;
+namespace TransactionSimulator.Core.Contracts.Auth;
 
 public record LoginRequest(string Email, string Password);

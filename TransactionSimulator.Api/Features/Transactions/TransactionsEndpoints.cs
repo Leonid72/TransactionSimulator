@@ -1,8 +1,10 @@
 using System.Security.Claims;
 using FluentValidation;
 using Microsoft.AspNetCore.Http.HttpResults;
-using TransactionSimulator.Api.Common;
 using TransactionSimulator.Api.Endpoints;
+using TransactionSimulator.Core.Common;
+using TransactionSimulator.Core.Contracts.Transactions;
+using TransactionSimulator.Core.Interfaces;
 
 namespace TransactionSimulator.Api.Features.Transactions;
 

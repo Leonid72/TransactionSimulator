@@ -1,7 +1,9 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Http.HttpResults;
-using TransactionSimulator.Api.Common;
 using TransactionSimulator.Api.Endpoints;
+using TransactionSimulator.Core.Common;
+using TransactionSimulator.Core.Contracts.Auth;
+using TransactionSimulator.Core.Interfaces;
 
 namespace TransactionSimulator.Api.Features.Auth;
 
@@ -38,7 +40,6 @@ public static class AuthEndpoints
         IAuthService authService)
     {
         await validator.ValidateAndThrowAsync(request);
-
         var userId = await authService.RegisterAsync(request);
         return TypedResults.Ok(ApiResponse<object>.Success(new { UserId = userId }, "User registered"));
     }
@@ -49,7 +50,6 @@ public static class AuthEndpoints
         IAuthService authService)
     {
         await validator.ValidateAndThrowAsync(request);
-
         var result = await authService.LoginAsync(request);
         return TypedResults.Ok(ApiResponse<LoginResponse>.Success(result, "Authenticated"));
     }

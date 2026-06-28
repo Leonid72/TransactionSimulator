@@ -1,9 +1,9 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using TransactionSimulator.Api.Data.Entities;
+using TransactionSimulator.Core.Entities;
 
-namespace TransactionSimulator.Api.Data;
+namespace TransactionSimulator.Infrastructure.Data;
 
 public class AppDbContext : IdentityDbContext<AppUser, IdentityRole, string>
 {

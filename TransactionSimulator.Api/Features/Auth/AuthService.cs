@@ -4,8 +4,10 @@ using System.Text;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using TransactionSimulator.Api.Common;
-using TransactionSimulator.Api.Data.Entities;
+using TransactionSimulator.Core.Common;
+using TransactionSimulator.Core.Contracts.Auth;
+using TransactionSimulator.Core.Entities;
+using TransactionSimulator.Core.Interfaces;
 
 namespace TransactionSimulator.Api.Features.Auth;
 
@@ -17,15 +19,9 @@ public class AuthService(
     {
         var existingUser = await userManager.FindByEmailAsync(request.Email);
         if (existingUser is not null)
-        {
             throw new InvalidOperationException("User already exists");
-        }
 
-        var user = new AppUser
-        {
-            UserName = request.Email,
-            Email = request.Email
-        };
+        var user = new AppUser { UserName = request.Email, Email = request.Email };
 
         var createResult = await userManager.CreateAsync(user, request.Password);
         if (!createResult.Succeeded)
@@ -35,9 +31,7 @@ public class AuthService(
         }
 
         if (!string.IsNullOrWhiteSpace(request.FullName))
-        {
             await userManager.AddClaimAsync(user, new Claim(ClaimTypes.Name, request.FullName));
-        }
 
         return user.Id;
     }
@@ -46,15 +40,10 @@ public class AuthService(
     {
         var user = await userManager.FindByEmailAsync(request.Email);
         if (user is null)
-        {
             throw new UnauthorizedAccessException("Invalid credentials");
-        }
 
-        var passwordValid = await userManager.CheckPasswordAsync(user, request.Password);
-        if (!passwordValid)
-        {
+        if (!await userManager.CheckPasswordAsync(user, request.Password))
             throw new UnauthorizedAccessException("Invalid credentials");
-        }
 
         var now = DateTime.UtcNow;
         var expiresAtUtc = now.AddMinutes(jwtOptions.Value.ExpiresMinutes);
@@ -62,17 +51,17 @@ public class AuthService(
 
         return new LoginResponse
         {
-            AccessToken = token,
+            AccessToken  = token,
             ExpiresAtUtc = expiresAtUtc,
-            UserId = user.Id,
-            Email = user.Email ?? string.Empty
+            UserId       = user.Id,
+            Email        = user.Email ?? string.Empty
         };
     }
 
     private async Task<string> GenerateJwtTokenAsync(AppUser user, DateTime issuedAtUtc, DateTime expiresAtUtc)
     {
         var userClaims = await userManager.GetClaimsAsync(user);
-        var userRoles = await userManager.GetRolesAsync(user);
+        var userRoles  = await userManager.GetRolesAsync(user);
 
         var claims = new List<Claim>
         {
@@ -83,17 +72,17 @@ public class AuthService(
         };
 
         claims.AddRange(userClaims);
-        claims.AddRange(userRoles.Select(role => new Claim(ClaimTypes.Role, role)));
+        claims.AddRange(userRoles.Select(r => new Claim(ClaimTypes.Role, r)));
 
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.Value.Key));
+        var key         = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.Value.Key));
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
         var jwt = new JwtSecurityToken(
-            issuer: jwtOptions.Value.Issuer,
-            audience: jwtOptions.Value.Audience,
-            claims: claims,
-            notBefore: issuedAtUtc,
-            expires: expiresAtUtc,
+            issuer:            jwtOptions.Value.Issuer,
+            audience:          jwtOptions.Value.Audience,
+            claims:            claims,
+            notBefore:         issuedAtUtc,
+            expires:           expiresAtUtc,
             signingCredentials: credentials);
 
         return new JwtSecurityTokenHandler().WriteToken(jwt);

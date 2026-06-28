@@ -1,8 +1,9 @@
 using System.Security.Claims;
 using Microsoft.EntityFrameworkCore;
-using TransactionSimulator.Api.Common;
-using TransactionSimulator.Api.Data;
-using TransactionSimulator.Api.Data.Entities;
+using TransactionSimulator.Core.Contracts.Transactions;
+using TransactionSimulator.Core.Entities;
+using TransactionSimulator.Core.Interfaces;
+using TransactionSimulator.Infrastructure.Data;
 
 namespace TransactionSimulator.Api.Features.Transactions;
 
@@ -11,9 +12,7 @@ public class TransactionService(AppDbContext dbContext) : ITransactionService
     private const int BankingStart = 8;
     private const int BankingEnd   = 18;
 
-    public async Task<TransactionResponse> SubmitAsync(
-        SubmitTransactionRequest request,
-        ClaimsPrincipal user)
+    public async Task<TransactionResponse> SubmitAsync(SubmitTransactionRequest request, ClaimsPrincipal user)
     {
         var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
         if (string.IsNullOrWhiteSpace(userId))
@@ -68,15 +67,14 @@ public class TransactionService(AppDbContext dbContext) : ITransactionService
             .ToListAsync();
     }
 
-    private static TransactionResponse MapToResponse(Transaction transaction) =>
-        new()
-        {
-            Id              = transaction.Id,
-            CardHolder      = transaction.CardHolder,
-            Region          = transaction.Region,
-            LocalTime       = $"{transaction.Hour:D2}:{transaction.Minute:D2}",
-            Status          = transaction.Status.ToString(),
-            RejectionReason = transaction.RejectionReason,
-            SubmittedAtUtc  = transaction.SubmittedAtUtc,
-        };
+    private static TransactionResponse MapToResponse(Transaction t) => new()
+    {
+        Id              = t.Id,
+        CardHolder      = t.CardHolder,
+        Region          = t.Region,
+        LocalTime       = $"{t.Hour:D2}:{t.Minute:D2}",
+        Status          = t.Status.ToString(),
+        RejectionReason = t.RejectionReason,
+        SubmittedAtUtc  = t.SubmittedAtUtc,
+    };
 }

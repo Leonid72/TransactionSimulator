@@ -3,6 +3,10 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TransactionSimulator.Core", "TransactionSimulator.Core\TransactionSimulator.Core.csproj", "{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TransactionSimulator.Infrastructure", "TransactionSimulator.Infrastructure\TransactionSimulator.Infrastructure.csproj", "{B2C3D4E5-F6A7-8901-BCDE-F12345678901}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TransactionSimulator.Api", "TransactionSimulator.Api\TransactionSimulator.Api.csproj", "{6E8DF84B-C99C-4A93-8E27-D4A18CB0A2B1}"
 EndProject
 Global
@@ -11,6 +15,14 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B2C3D4E5-F6A7-8901-BCDE-F12345678901}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B2C3D4E5-F6A7-8901-BCDE-F12345678901}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B2C3D4E5-F6A7-8901-BCDE-F12345678901}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B2C3D4E5-F6A7-8901-BCDE-F12345678901}.Release|Any CPU.Build.0 = Release|Any CPU
 		{6E8DF84B-C99C-4A93-8E27-D4A18CB0A2B1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{6E8DF84B-C99C-4A93-8E27-D4A18CB0A2B1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6E8DF84B-C99C-4A93-8E27-D4A18CB0A2B1}.Release|Any CPU.ActiveCfg = Release|Any CPU

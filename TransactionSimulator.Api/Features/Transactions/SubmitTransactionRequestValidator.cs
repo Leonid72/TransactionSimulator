@@ -1,5 +1,6 @@
 using FluentValidation;
-using TransactionSimulator.Api.Common;
+using TransactionSimulator.Core.Common;
+using TransactionSimulator.Core.Contracts.Transactions;
 
 namespace TransactionSimulator.Api.Features.Transactions;
 

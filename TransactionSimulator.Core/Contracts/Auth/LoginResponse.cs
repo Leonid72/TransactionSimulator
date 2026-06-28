@@ -1,4 +1,4 @@
-namespace TransactionSimulator.Api.Features.Auth;
+namespace TransactionSimulator.Core.Contracts.Auth;
 
 public class LoginResponse
 {

@@ -1,8 +1,8 @@
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
-using TransactionSimulator.Api.Common;
-using TransactionSimulator.Api.Features.Transactions;
+using TransactionSimulator.Core.Common;
+using TransactionSimulator.Core.Contracts.Transactions;
 
 namespace TransactionSimulator.Api.Extensions;
 

@@ -1,4 +1,4 @@
-namespace TransactionSimulator.Api.Data.Entities;
+namespace TransactionSimulator.Core.Entities;
 
 public class ApplicationLog
 {
